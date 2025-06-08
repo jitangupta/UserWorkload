@@ -18,4 +18,8 @@ public partial class User
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
+            
+    public string PasswordHash { get; set; }
+    
+    public string PasswordSalt { get; set; } 
 }

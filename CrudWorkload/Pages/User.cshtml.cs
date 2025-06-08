@@ -14,11 +14,19 @@ namespace UserWorkload.Pages
             _context = context;
         }
 
-        public IList<User> Users { get; set; } = new List<User>();
+        public bool IsAuthenticated => User.Identity.IsAuthenticated;
+        public IReadOnlyList<User>? Users { get; set; }
 
         public async Task OnGetAsync()
         {
-            Users = await _context.Users.AsNoTracking().ToListAsync();
+            if (IsAuthenticated)
+            {
+                Users = await _context.Users.AsNoTracking().ToListAsync();
+            }
+            else
+            {
+                Users = null;
+            }
         }
     }
 }

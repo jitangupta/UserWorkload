@@ -1,0 +1,9 @@
+@model UserProfileImageViewModel
+
+@if (!string.IsNullOrEmpty(Model.ImageUrl))
+{
+    <span class="navbar-profile-info" style="display: flex; align-items: center; gap: 8px;">
+        <span>@Model.Name</span>
+        <img src="@Model.ImageUrl" alt="Profile" style="height: 35px; border-radius: 5px;" class="navbar-profile-img" />
+    </span>
+}

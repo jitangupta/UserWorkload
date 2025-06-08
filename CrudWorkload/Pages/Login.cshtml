@@ -1,0 +1,26 @@
+@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+<h2 class="mb-4">Login</h2>
+<form method="post" class="w-100" style="max-width:400px;">
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" type="email" autocomplete="username" required />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Password" class="form-label"></label>
+        <input asp-for="Password" class="form-control" type="password" autocomplete="current-password" required />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Login</button>
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger mt-3">@Model.ErrorMessage</div>
+    }
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

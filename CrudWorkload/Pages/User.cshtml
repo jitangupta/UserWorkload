@@ -6,42 +6,44 @@
 
 <h2>User List</h2>
 
-@if (Model.Users.Count == 0)
+@if (!Model.IsAuthenticated)
 {
-    <p>No users found.</p>
+    <div>
+        <p>Please <a href="/Login">login</a> to view the user list.</p>
+    </div>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Bio</th>
-                <th>Photo</th>
-                <th>Created At</th>
-                <th>Updated At</th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var user in Model.Users)
-        {
-            <tr>
-                <td>@user.Id</td>
-                <td>@user.Name</td>
-                <td>@user.Email</td>
-                <td>@user.Bio</td>
-                <td>
-                    @if (!string.IsNullOrEmpty(user.PhotoUrl))
-                    {
-                        <img src="@user.PhotoUrl" alt="Photo" width="50" />
-                    }
-                </td>
-                <td>@user.CreatedAt.ToString("u")</td>
-                <td>@user.UpdatedAt.ToString("u")</td>
-            </tr>
-        }
-        </tbody>
-    </table>
+    <a class="btn btn-primary mb-3" asp-page="/UserCreate">Create User</a>
+
+    @if (Model.Users.Count == 0)
+    {
+        <p>No users found.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Bio</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.Name</td>
+                    <td>@user.Email</td>
+                    <td>@user.Bio</td>
+                    <td>@user.CreatedAt.ToString("u")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
 }

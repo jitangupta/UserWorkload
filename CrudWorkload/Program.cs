@@ -1,5 +1,7 @@
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
+using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using UserWorkload.Context;
 using UserWorkload.Services;
@@ -19,12 +21,23 @@ builder.Services.AddDbContext<DemoDeckDbContext>(options =>
 builder.Services.AddSingleton(secretClient);
 builder.Services.AddScoped<IKeyVaultService, KeyVaultService>();
 
+// Add BlobStorageService
+var storageConnectionString = await secretClient.GetSecretAsync("StorageConnectionString");
+builder.Services.AddSingleton(new BlobStorageService(storageConnectionString.Value.Value));
+
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-//// Azure Blob Storage
-//builder.Services.AddSingleton(x => new BlobServiceClient(builder.Configuration.GetConnectionString("AzureStorage")));
-//builder.Services.AddScoped<IFileStorageService, AzureBlobStorageService>();
+// Add authentication services
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Login"; // Redirect to /Login if not authenticated
+    });
+
+// Azure Blob Storage
+builder.Services.AddSingleton(x =>
+    new BlobServiceClient(storageConnectionString.Value.Value));
 
 var app = builder.Build();
 
@@ -41,8 +54,23 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+app.MapGet("/api/dbstatus", async (DemoDeckDbContext db) =>
+{
+    try
+    {
+        // Try a lightweight query
+        await db.Users.AnyAsync();
+        return Results.Ok(new { status = "ready" });
+    }
+    catch
+    {
+        return Results.Ok(new { status = "starting" });
+    }
+});
 
 app.Run();
