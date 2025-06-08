@@ -1,0 +1,1 @@
+Scaffold-DbContext Name=DefaultConnection Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Context DemoDeckDbContext -DataAnnotations -ContextDir Context -force
