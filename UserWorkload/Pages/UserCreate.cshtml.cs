@@ -14,14 +14,14 @@ namespace UserWorkload.Pages
     public class UserCreateModel : PageModel
     {
         private readonly DemoDeckDbContext _db;
-        private readonly IKeyVaultService _keyVaultService;
         private readonly BlobServiceClient _blobServiceClient;
+        private readonly IConfiguration _configuration;
 
-        public UserCreateModel(DemoDeckDbContext db, IKeyVaultService keyVaultService, BlobServiceClient blobServiceClient)
+        public UserCreateModel(DemoDeckDbContext db, BlobServiceClient blobServiceClient, IConfiguration configuration)
         {
             _db = db;
-            _keyVaultService = keyVaultService;
             _blobServiceClient = blobServiceClient;
+            _configuration = configuration;
         }
 
         [BindProperty, Required]
@@ -94,7 +94,7 @@ namespace UserWorkload.Pages
             var photoUrl = blobClient.Uri.ToString();
 
             // Hash password with salt
-            var encryptionKey = await _keyVaultService.GetSecretAsync(SecretKey.PasswordEncryptionKey);
+            var encryptionKey = _configuration.GetValue<string>("Encryption:Key");
             var hasher = new PasswordHasher(encryptionKey);
             var (hash, salt) = hasher.HashPassword(Password);
 

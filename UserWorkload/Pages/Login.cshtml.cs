@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using UserWorkload.Context;
@@ -9,12 +10,12 @@ using UserWorkload.Context;
 public class LoginModel : PageModel
 {
     private readonly DemoDeckDbContext _db;
-    private readonly IKeyVaultService _keyVaultService;
+    private readonly IConfiguration _configuration;
 
-    public LoginModel(DemoDeckDbContext db, IKeyVaultService keyVaultService)
+    public LoginModel(DemoDeckDbContext db, IConfiguration configuration)
     {
         _db = db;
-        _keyVaultService = keyVaultService;
+        _configuration = configuration;
     }
 
     [BindProperty, Required, EmailAddress]
@@ -33,7 +34,7 @@ public class LoginModel : PageModel
             return Page();
         }
 
-        var encryptionKey = await _keyVaultService.GetSecretAsync(SecretKey.PasswordEncryptionKey);
+        var encryptionKey = _configuration.GetValue<string>("Encryption:Key");
         var hasher = new PasswordHasher(encryptionKey);
 
         var user = _db.Users.FirstOrDefault(u => u.Email == Email);

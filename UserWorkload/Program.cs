@@ -1,27 +1,38 @@
 using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using UserWorkload.Context;
-using UserWorkload.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddScoped<IKeyVaultService, KeyVaultService>();
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+    .AddEnvironmentVariables();
 
-if (!builder.Environment.IsDevelopment())
+if (builder.Environment.IsProduction())
 {
-    var keyVaultEndpoint = new Uri(builder.Configuration["KeyVault:VaultUri"]);
-    builder.Configuration.AddAzureKeyVault(keyVaultEndpoint, new DefaultAzureCredential());
+    var keyVaultName = builder.Configuration["KeyVaultName"];
+    if (string.IsNullOrWhiteSpace(keyVaultName))
+    {
+        throw new Exception("KeyVaultName is not configured.");
+    }
+    var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
+
+    builder.Configuration.AddAzureKeyVault(
+        keyVaultUri,
+        new DefaultAzureCredential(),
+        new Azure.Extensions.AspNetCore.Configuration.Secrets.KeyVaultSecretManager());
 }
 
-var connectionString = builder.Configuration["Secrets:DemoDeckDbConnectionString"];
+var connectionString = builder.Configuration["ConnectionStrings:DemoDeckDb"];
 builder.Services.AddDbContext<DemoDeckDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // Add BlobStorageService
-var storageConnectionString = builder.Configuration["Secrets:StorageConnectionString"];
+var storageConnectionString = builder.Configuration["Storage:Blob"];
 builder.Services.AddSingleton(new BlobStorageService(storageConnectionString));
 builder.Services.AddSingleton(x => new BlobServiceClient(storageConnectionString));
 
