@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
 using UserWorkload.Context;
 using UserWorkload.Models;
-using UserWorkload.Services;
 using Azure.Storage.Blobs;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -95,7 +94,7 @@ namespace UserWorkload.Pages
             var photoUrl = blobClient.Uri.ToString();
 
             // Hash password with salt
-            var encryptionKey = await _keyVaultService.GetSecretAsync("PasswordEncryptionKey");
+            var encryptionKey = await _keyVaultService.GetSecretAsync(SecretKey.PasswordEncryptionKey);
             var hasher = new PasswordHasher(encryptionKey);
             var (hash, salt) = hasher.HashPassword(Password);
 

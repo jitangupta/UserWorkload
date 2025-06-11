@@ -2,12 +2,9 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using UserWorkload.Context;
-using UserWorkload.Models;
-using UserWorkload.Services;
 
 public class LoginModel : PageModel
 {
@@ -36,7 +33,7 @@ public class LoginModel : PageModel
             return Page();
         }
 
-        var encryptionKey = await _keyVaultService.GetSecretAsync("PasswordEncryptionKey");
+        var encryptionKey = await _keyVaultService.GetSecretAsync(SecretKey.PasswordEncryptionKey);
         var hasher = new PasswordHasher(encryptionKey);
 
         var user = _db.Users.FirstOrDefault(u => u.Email == Email);
@@ -66,8 +63,3 @@ public class LoginModel : PageModel
         return RedirectToPage("/Index");
     }
 }
-
-
-//var (hash, salt) = hasher.HashPassword(plainTextPassword);
-//user.PasswordHash = hash;
-//user.PasswordSalt = salt;

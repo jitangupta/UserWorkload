@@ -8,22 +8,22 @@ using UserWorkload.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var keyVaultUri = builder.Configuration["KeyVault:VaultUri"];
-var credential = new DefaultAzureCredential();
-var secretClient = new SecretClient(new Uri(keyVaultUri), credential);
-
-// Database
-var connectionString = await secretClient.GetSecretAsync("DemoDeckDbConnectionString");
-builder.Services.AddDbContext<DemoDeckDbContext>(options =>
-    options.UseSqlServer(connectionString.Value.Value));
-
-// Register the SecretClient and KeyVaultService
-builder.Services.AddSingleton(secretClient);
 builder.Services.AddScoped<IKeyVaultService, KeyVaultService>();
 
+if (!builder.Environment.IsDevelopment())
+{
+    var keyVaultEndpoint = new Uri(builder.Configuration["KeyVault:VaultUri"]);
+    builder.Configuration.AddAzureKeyVault(keyVaultEndpoint, new DefaultAzureCredential());
+}
+
+var connectionString = builder.Configuration["Secrets:DemoDeckDbConnectionString"];
+builder.Services.AddDbContext<DemoDeckDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
 // Add BlobStorageService
-var storageConnectionString = await secretClient.GetSecretAsync("StorageConnectionString");
-builder.Services.AddSingleton(new BlobStorageService(storageConnectionString.Value.Value));
+var storageConnectionString = builder.Configuration["Secrets:StorageConnectionString"];
+builder.Services.AddSingleton(new BlobStorageService(storageConnectionString));
+builder.Services.AddSingleton(x => new BlobServiceClient(storageConnectionString));
 
 // Add services to the container.
 builder.Services.AddRazorPages();
@@ -34,10 +34,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Login"; // Redirect to /Login if not authenticated
     });
-
-// Azure Blob Storage
-builder.Services.AddSingleton(x =>
-    new BlobServiceClient(storageConnectionString.Value.Value));
 
 var app = builder.Build();
 

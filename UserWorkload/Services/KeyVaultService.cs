@@ -1,50 +1,37 @@
-﻿using Azure.Security.KeyVault.Secrets;
-
+﻿
 namespace UserWorkload.Services
 {
-    public interface IKeyVaultService
-    {
-        Task<string> GetSecretAsync(string secretName);
-        Task SetSecretAsync(string secretName, string secretValue);
-    }
-
     public class KeyVaultService : IKeyVaultService
     {
-        private readonly SecretClient _secretClient;
         private readonly ILogger<KeyVaultService> _logger;
+        private readonly IConfiguration _configuration;
+        private readonly IHostEnvironment _env;
 
-        public KeyVaultService(SecretClient secretClient, ILogger<KeyVaultService> logger)
+        public KeyVaultService(ILogger<KeyVaultService> logger, IConfiguration configuration, IHostEnvironment env)
         {
-            _secretClient = secretClient;
             _logger = logger;
+            _configuration = configuration;
+            _env = env;
         }
 
-        public async Task<string> GetSecretAsync(string secretName)
+        private static string GetKeyName(SecretKey key) => key switch
         {
-            try
-            {
-                var secret = await _secretClient.GetSecretAsync(secretName);
-                return secret.Value.Value;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to retrieve secret {SecretName}", secretName);
-                throw;
-            }
-        }
+            SecretKey.PasswordEncryptionKey => "PasswordEncryptionKey",
+            SecretKey.DemoDeckDbConnectionString => "DemoDeckDbConnectionString",
+            SecretKey.StorageConnectionString => "StorageConnectionString",
+            _ => throw new ArgumentOutOfRangeException(nameof(key), key, null)
+        };
 
-        public async Task SetSecretAsync(string secretName, string secretValue)
+        public Task<string> GetSecretAsync(SecretKey secretKey)
         {
-            try
+            var keyName = GetKeyName(secretKey);
+            var value = _configuration[$"Secrets:{keyName}"];
+            if (string.IsNullOrEmpty(value))
             {
-                await _secretClient.SetSecretAsync(secretName, secretValue);
-                _logger.LogInformation("Secret {SecretName} updated successfully", secretName);
+                _logger.LogError("Secret '{SecretName}' not found in configuration.", keyName);
+                throw new InvalidOperationException($"Secret '{keyName}' not found in configuration.");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to set secret {SecretName}", secretName);
-                throw;
-            }
+            return Task.FromResult(value);
         }
     }
 }
