@@ -52,36 +52,7 @@ It follows modern best practices around:
 ---
 
 ## 🗺️ Architecture Overview
-
-```text
-+----------------------+
-|  .NET 8 Razor App    |
-|  (Container App)     |
-+----------------------+
-           |
-     Managed Identity
-           |
-+----------------------+
-|   Azure Key Vault    |
-| (App Secrets Store)  |
-+----------------------+
-
-           |
-           VNet
-     ┌────────────┐
-     │  Subnet A  │ ── Azure Container App
-     └────────────┘
-           |
-     ┌────────────┐
-     │  Subnet B  │ ── Azure SQL Database (Private Endpoint)
-     └────────────┘
-
-           |
-+----------------------+
-| Azure Blob Storage   |
-| (User profile photos)|
-+----------------------+
-```
+![Architecture Overview](Architecture%20Overview.png)
 
 ## 🛠 Deployment Pipeline
 ```text
