@@ -8,9 +8,11 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UserWorkload.Pages
 {
+    [Authorize]
     public class UserCreateModel : PageModel
     {
         private readonly DemoDeckDbContext _db;
