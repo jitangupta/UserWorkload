@@ -91,3 +91,7 @@ This app architecture can be adapted for:
 
 ## 📄 License
 MIT License – free to use with attribution.
+
+### Demo Credentials
+Email: `hi@jitangupta.com`
+Password: `admin123`
